@@ -1,0 +1,106 @@
+#################
+
+#Try to organize again all data set and put correct names, you got it how to clean and manipulate data.
+#you have all information but its necessary show out more easy to identify.
+#you achieved good results finding information about some patterns.
+#now its necessary ask and organize what you want with this data.
+
+
+
+library(tidyverse)
+library(lubridate)
+library(janitor)
+library(dplyr)
+library(readr)
+library(tidyr)
+library(ggplot2)
+library(stringr) 
+library(skimr)
+library(scales)
+library(data.table)
+library(plyr)
+library(viridis)
+
+###################################1
+
+summary(Daily_Activity)
+summary(teste3)
+na.omit(teste)
+n_distinct(Weight$Date)
+glimpse(Sleep_Day2)
+glimpse(Daily_Activity)
+glimpse(Weight)
+#separate cols
+Sleep_Day_time_Correct<-Sleepday_table%>%separate(SleepDay, into = c("date","hour"),sep = " ")
+Weight_date<-Weight%>%separate(Date, into = c("date", "hour"),sep = " ")
+
+#######Trying to find some patterns - 1
+
+aggregate(Daily_Activity$TotalDistance~Daily_Activity$ActivityDate,FUN = mean)
+aggregate(Daily_Activity$Calories~Daily_Activity$ActivityDate,FUN = mean)
+aggregate(Daily_Activity$TotalSteps~Daily_Activity$ActivityDate,FUN = mean)
+aggregate(Daily_Activity$SedentaryActiveDistance~Daily_Activity$ActivityDate, FUN = mean)
+aggregate(Daily_Activity$ModeratelyActiveDistance~Daily_Activity$ActivityDate,FUN = mean)
+aggregate(Daily_Activity$Calories~Sleep_Day2$TotalMinutesAsleep,FUN = mean)
+aggregate(Weight$BMI~Weight$Id, FUN = mean)
+
+aggregate(Sleepday_table$TotalMinutesAsleep~Sleepday_table$SleepDay, FUN = mean)
+aggregate(Sleep_Day_time_Correct$TotalMinutesAsleep~Sleep_Day_time_Correct$date, FUN = mean)
+#################################################1
+
+Calories_data<-aggregate(Daily_Activity$TotalDistance~Daily_Activity$Calories,FUN = mean)
+
+Distance_date<-aggregate(Daily_Activity$TotalDistance~Daily_Activity$ActivityDate,FUN = mean)
+Calories_data<-aggregate(Daily_Activity$Calories~Daily_Activity$ActivityDate,FUN = mean)
+Distance_calories<-merge(Distance_date,Calories_data)
+
+Sleep_hours<-aggregate(Sleep_Day_time_Correct$Total_sleep_hours~Sleep_Day_time_Correct$date, FUN = mean)
+
+Sleep_hours<-aggregate(Sleep_Day_time_Correct$TotalMinutesAsleep~Sleep_Day_time_Correct$date,FUN = mean)
+
+Bind_sleep_BMI<-bind_cols(Weight_avg_BMI,teste4)
+testemerge1<-bind_cols(teste3,teste4)
+testemerge1<-testemerge1%>%select(-c(`Sleep_Day2$date`))
+Weight_avg_BMI<-aggregate(Weight_date$BMI~Weight_date$date, FUN = mean)
+
+
+Bind_sleep_BMI<-bind_cols(Weight_avg_BMI,teste4)
+Bind_sleep_BMI<-Bind_sleep_BMI%>%select(-c(`Sleep_Day2$date`))
+
+Sleep_BMI<-bind_cols()
+####################Convert Minutes to Hours
+
+Sleep_hours$Sleep_in_hours <- Sleep_hours$`Sleep_Day_time_Correct$TotalMinutesAsleep`/ 60
+
+
+######################################2
+#creating comparative
+Weight%>%select(WeightKg,BMI)%>%summary()
+Daily_Activity%>%select(VeryActiveDistance,ModeratelyActiveDistance,
+                        LightActiveDistance,SedentaryActiveDistance)%>%summary()
+
+Daily_Activity%>%select(VeryActiveMinutes,
+                        FairlyActiveMinutes,LightlyActiveMinutes,SedentaryMinutes)%>%summary()
+Sleep_Day2%>%select(TotalTimeInBed,TotalMinutesAsleep)%>%summary()
+
+
+#i'm on process to understand better whats going on here,I was trying to to compare some values inside that data
+#now i need to clean more and find some to add two different dataset.
+#try to merge this data in one dataset
+
+
+Calories_data$`Daily_Activity$Calories`<-format(round(teste3$`Daily_Activity$Calories`,0), nsmall = 0)
+Distance_date$`Daily_Activity$TotalDistance`<-format(round(Distance_date$`Daily_Activity$TotalDistance`,0), nsmall = 0)
+Sleep_hours$Sleep_in_hours_round <-format(round(Sleep_hours$Sleep_in_hours,0), nsmall = 0)
+Weight_avg_BMI$`Weight_date$BMI`<format(round(Weight_avg_BMI$`Weight_date$BMI`, 0), nsmall = 0)
+
+###########################1
+
+ggplot(data = teste3, aes(x=teste3$`Daily_Activity$TotalDistance`, y=teste3$`Daily_Activity$Calories`))+geom_smooth()+geom_point()
+ggplot(data=Daily_Activity, aes(x=Daily_Activity$TotalSteps, y=Daily_Activity$Calories))+geom_point()+geom_smooth()
+ggplot(data = Daily_Activity, aes(x=Daily_Activity$SedentaryActiveDistance, y=Daily_Activity$Calories))+geom_smooth()+geom_point()
+ggplot(data = Distance_date, aes(x=Distance_date$`Daily_Activity$TotalDistance`,y=Distance_date$`Daily_Activity$ActivityDate`))+geom_point()+geom_smooth()
+ggplot(data = Daily_Activity, aes(x=Daily_Activity$TotalSteps, y=Daily_Activity$Calories))+geom_smooth()+geom_point()
+ggplot(data = Daily_Activity, aes(x=Daily_Activity$LightActiveDistance, y=Daily_Activity$TotalDistance))+geom_point()+geom_smooth()
+ggplot(data = Daily_Activity, aes(x=Daily_Activity$Calories, y=Daily_Activity$SedentaryMinutes))+geom_point()+geom_smooth()
+ggplot(data = Sleepday_table, aes(x=Sleepday_table$TotalMinutesAsleep, y=Sleepday_table$TotalTimeInBed))+geom_point()+geom_smooth()
